@@ -1,0 +1,48 @@
+# Python virtual environment
+venv/
+.env
+*.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints (if any)
+.ipynb_checkpoints/
+
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Logs
+*.log
+
+# Docker
+*.dockerignore
+*.dockerfile
+docker-compose.override.yml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ML / data
+app/models/*.pkl
+app/data.json
+app/__pycache__/
+app/services/__pycache__/
+app/utils/__pycache__/

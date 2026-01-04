@@ -1,0 +1,24 @@
+heart_risk_prediction/
+├── app/
+│   ├── __init__.py
+│   ├── routes.py
+│   ├── services/
+│   │   └── prediction_service.py
+│   ├── models/
+│   │   └── heart_risk_model.joblib          # Your model (renamed for clarity)
+│   ├── utils/
+│   │   └── preprocessing.py
+│   ├── templates/
+│   │   ├── index.html
+│   │   └── result.html
+│   ├── static/
+│   │   └── style.css
+│   └── data.json                                # Optional sample data
+│
+├── requirements.txt
+├── .env
+└── serve.py
+
+
+
+run serve.py  to run the web app 

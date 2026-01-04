@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Heart Disease Risk Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Heart Disease Risk Prediction</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, msg in messages %}
+                    <p class="flash {{ category }}">{{ msg }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Form - always shown -->
+        <form method="POST" id="prediction-form">
+            <div class="form-grid">
+                <label>
+                    Age
+                    <input type="number" name="age" required min="1" max="120" value="{{ input_data.age if input_data else '' }}">
+                </label>
+                <label>
+                    Sex (1 = Male, 0 = Female)
+                    <input type="number" name="sex" required min="0" max="1" value="{{ input_data.sex if input_data else '' }}">
+                </label>
+                <label>
+                    Systolic BP (mmHg)
+                    <input type="number" name="systolic_bp" required step="any" value="{{ input_data.systolic_bp if input_data else '' }}">
+                </label>
+                <label>
+                    Cholesterol (mg/dL)
+                    <input type="number" name="cholesterol" required step="any" value="{{ input_data.cholesterol if input_data else '' }}">
+                </label>
+                <label>
+                    BMI
+                    <input type="number" name="bmi" required step="0.01" value="{{ input_data.bmi if input_data else '' }}">
+                </label>
+                <label>
+                    Smoking (1 = Yes, 0 = No)
+                    <input type="number" name="smoking" required min="0" max="1" value="{{ input_data.smoking if input_data else '' }}">
+                </label>
+                <label>
+                    Diabetes (1 = Yes, 0 = No)
+                    <input type="number" name="diabetes" required min="0" max="1" value="{{ input_data.diabetes if input_data else '' }}">
+                </label>
+                <label>
+                    Resting Heart Rate
+                    <input type="number" name="resting_hr" required value="{{ input_data.resting_hr if input_data else '' }}">
+                </label>
+                <label>
+                    Physical Activity (days/week)
+                    <input type="number" name="physical_activity" required min="0" max="7" value="{{ input_data.physical_activity if input_data else '' }}">
+                </label>
+                <label>
+                    Family History (1 = Yes, 0 = No)
+                    <input type="number" name="family_history" required min="0" max="1" value="{{ input_data.family_history if input_data else '' }}">
+                </label>
+            </div>
+            <button type="submit">Predict Risk</button>
+        </form>
+
+        <!-- Result + Chat section - shown only after prediction -->
+        <!-- Result + Chat section - shown only after prediction -->
+            {% if risk_level %}
+            <!-- Prediction Result -->
+            <div class="result-section">
+                <h2>Prediction Result</h2>
+                <div class="result-box {{ risk_level|lower|replace(' ', '-') }}">
+                    <h3>Predicted Risk Level: <strong>{{ risk_level }}</strong></h3>
+                </div>
+
+                <h3>Probability Breakdown</h3>
+                <table>
+                    <tr><th>Risk Level</th><th>Probability (%)</th></tr>
+                    <tr><td>Low</td><td>{{ probabilities.Low }}</td></tr>
+                    <tr><td>Medium</td><td>{{ probabilities.Medium }}</td></tr>
+                    <tr><td>High</td><td>{{ probabilities.High }}</td></tr>
+                    <tr><td>Very High</td><td>{{ probabilities['Very High'] }}</td></tr>
+                </table>
+
+                <p class="note">Modify values and predict again anytime.</p>
+            </div>
+
+            <!-- Chat with Dr. Heart -->
+            <div class="chat-section">
+                <h2>💬 Chat with Dr. Heart (AI Assistant)</h2>
+                <div class="chat-box">
+                    {% for msg in chat_history %}
+                        <div class="message {{ 'user-msg' if msg.role == 'user' else 'ai-msg' }}">
+                            <strong>{{ 'You' if msg.role == 'user' else 'Dr. Heart' }}:</strong>
+                            <div class="msg-content">
+                                {% if msg.role == 'user' %}
+                                    <p>{{ msg.content }}</p>
+                                {% else %}
+                                    {{ msg.content | safe }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <form method="POST" class="chat-form">
+                    <input type="text" name="message" placeholder="Ask about diet, exercise, or heart health..." required autocomplete="off">
+                    <button type="submit">Send</button>
+                </form>
+            </div>
+        {% endif %}
+        <!-- ← ONLY ONE closing endif here -->
+        <!-- Single closing endif for the entire result + chat block -->
+    </div>
+</body>
+</html>
