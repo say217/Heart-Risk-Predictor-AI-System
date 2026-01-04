@@ -116,7 +116,7 @@ def index():
                         "parts": [msg['content']]
                     })
 
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                model = genai.GenerativeModel('gemini-2.5-flash')
                 chat = model.start_chat(history=history)
                 response = chat.send_message(user_message)
                 ai_reply = response.text
