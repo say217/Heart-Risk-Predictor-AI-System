@@ -1,39 +1,73 @@
-import joblib
+import os
+import requests
 import numpy as np
 import pandas as pd
+
 from flask import current_app
-import os
+from ..utils.preprocessing import preprocess_features
 
 class PredictionService:
     def __init__(self):
-        self.model = None  # Will load on first use
+        self.api_token = os.getenv("HF_API_TOKEN")
+        self.endpoint = os.getenv("HF_MODEL_ENDPOINT")
 
-    def _load_model(self):
-        if self.model is None:
-            model_path = current_app.config['MODEL_PATH']
-            if not os.path.exists(model_path):
-                raise FileNotFoundError(f"Model file not found: {model_path}")
-            self.model = joblib.load(model_path)
-            print(f"Model successfully loaded from {model_path}")
+        if not self.api_token or not self.endpoint:
+            raise RuntimeError("Hugging Face API configuration missing")
+
+        self.headers = {
+            "Authorization": f"Bearer {self.api_token}",
+            "Content-Type": "application/json"
+        }
 
     def predict(self, df: pd.DataFrame) -> dict:
-        self._load_model()  # Lazy load only when needed
-
-        from ..utils.preprocessing import preprocess_features
+        # Preprocess exactly as before
         df_processed = preprocess_features(df)
 
-        pred_class = self.model.predict(df_processed)[0]
-        pred_proba = self.model.predict_proba(df_processed)[0]
+        payload = {
+            "inputs": df_processed.to_dict(orient="records")
+        }
 
-        risk_map = {0: "Low", 1: "Medium", 2: "High", 3: "Very High"}
-        proba_percent = np.round(pred_proba * 100, 2)
+        response = requests.post(
+            self.endpoint,
+            headers=self.headers,
+            json=payload,
+            timeout=30
+        )
+
+        if response.status_code != 200:
+            raise RuntimeError(
+                f"Hugging Face inference failed: {response.text}"
+            )
+
+        result = response.json()
+
+        """
+        Expected HF response format (example):
+        [
+          {
+            "label": 2,
+            "probabilities": [0.05, 0.15, 0.60, 0.20]
+          }
+        ]
+        """
+
+        output = result[0]
+        pred_class = output["label"]
+        pred_proba = np.array(output["probabilities"]) * 100
+
+        risk_map = {
+            0: "Low",
+            1: "Medium",
+            2: "High",
+            3: "Very High"
+        }
 
         return {
             "risk_level": risk_map[pred_class],
             "probabilities": {
-                "Low": float(proba_percent[0]),
-                "Medium": float(proba_percent[1]),
-                "High": float(proba_percent[2]),
-                "Very High": float(proba_percent[3])
+                "Low": round(float(pred_proba[0]), 2),
+                "Medium": round(float(pred_proba[1]), 2),
+                "High": round(float(pred_proba[2]), 2),
+                "Very High": round(float(pred_proba[3]), 2)
             }
         }
